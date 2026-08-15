@@ -3,21 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UJ Notes - Login</title>
+    <title>UJ Notes - Portal Acadêmico</title>
+
+    <!-- METATAGS DE PRÉVIA (OPEN GRAPH / WHATSAPP / REDES SOCIAIS) -->
+    <meta property="og:title" content="UJ Notes - Portal Acadêmico">
+    <meta property="og:description" content="Seu portal acadêmico integrado para anotações, faltas, horários e materiais.">
+    <meta property="og:image" content="https://uj-notes.vercel.app/imgs/ujnotescapa.png">
+    <meta property="og:url" content="https://uj-notes.vercel.app/">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="UJ Notes - Portal Acadêmico">
+    <meta name="twitter:description" content="Seu portal acadêmico integrado para anotações, faltas, horários e materiais.">
+    <meta name="twitter:image" content="https://uj-notes.vercel.app/imgs/ujnotescapa.png">
+
     <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* Estilos embutidos para garantir o funcionamento imediato */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body.login-body {
+            background-color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+        .login-container {
+            background: #FFFFFF;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+        .login-brand {
+            width: 55%;
+            background-image: url('imgs/ujnotescapa.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #2b2b2b;
+        }
+        .login-box {
+            width: 45%;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #fafbfc;
+        }
+        .login-form-wrapper {
+            width: 100%;
+            max-width: 420px;
+            background: white;
+            padding: 45px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid #E0E0E0;
+        }
+        .login-badge {
+            background-color: rgba(153, 51, 51, 0.1);
+            color: #993333;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .login-box h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2A3B5C;
+            margin-bottom: 10px;
+        }
+        .login-desc {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+        .btn-google-login {
+            width: 100%;
+            background-color: white;
+            color: #333;
+            border: 1px solid #E0E0E0;
+            padding: 14px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .btn-google-login:hover {
+            background-color: #f8f9fa;
+            border-color: #cbd5e1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .login-footer-text {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+        @media (max-width: 768px) {
+            .login-container { flex-direction: column; overflow-y: auto; }
+            .login-brand { width: 100%; height: 220px; }
+            .login-box { width: 100%; height: auto; padding: 20px; background-color: white; }
+            .login-form-wrapper { padding: 10px; box-shadow: none; border: none; }
+        }
+    </style>
 </head>
 <body class="login-body">
     <div class="login-container">
-        <div class="login-brand">
-            <h1 style="color: white; font-size: 3rem; margin:0;">UJ<span style="font-size: 1.5rem; font-weight: 400;">NOTES</span></h1>
-        </div>
+        <!-- Lado Esquerdo: Imagem de Capa -->
+        <div class="login-brand"></div>
+
+        <!-- Lado Direito: Caixa de Acesso -->
         <div class="login-box">
-            <h2>Bem-vindo(a)</h2>
-            <p>Faça login para acessar o portal de estudos.</p>
-            <button id="btn-login-google" class="btn-primary" style="width: 100%; margin-top: 20px;">
-                Entrar com Google
-            </button>
+            <div class="login-form-wrapper">
+                <span class="login-badge">Portal Acadêmico</span>
+                <h2>Bem-vindo(a)! 👋</h2>
+                <p class="login-desc">Faça login com sua conta institucional ou do Google para gerenciar seus estudos com facilidade.</p>
+                
+                <button id="btn-login-google" class="btn-google-login">
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.95H1.19v3.15C3.18 21.32 7.23 24 12 24z"/>
+                        <path fill="#FBBC05" d="M5.28 14.25c-.25-.72-.38-1.49-.38-2.25s.13-1.53.38-2.25V6.6H1.19C.43 8.13 0 9.87 0 12s.43 3.87 1.19 5.4l4.09-3.15z"/>
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.23 0 3.18 2.68 1.19 6.6l4.09 3.15c.95-2.84 3.6-4.95 6.72-4.95z"/>
+                    </svg>
+                    Entrar com o Google
+                </button>
+
+                <div class="login-footer-text">
+                    <p>Ambiente seguro e integrado ao ecossistema acadêmico.</p>
+                </div>
+            </div>
         </div>
     </div>
     
