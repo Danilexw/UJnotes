@@ -467,7 +467,7 @@ body {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: var(--sidebar-bg);
+        background: var(--red);
         padding: 15px 20px;
         color: white;
         z-index: 40;
@@ -600,6 +600,160 @@ body {
     font-style: normal !important;
     font-weight: bold;
     cursor: pointer;
+}
+.logo {
+    text-align: center;
+    padding: 0 15px;
+    margin-bottom: 40px;
+}
+
+.logo img {
+    display: inline-block;
+    max-width: 100px;
+    height: auto;
+}
+/* ========================================== */
+/* ESTILOS DA TELA DE LOGIN MODERNA           */
+/* ========================================== */
+.login-body {
+    background-color: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+}
+
+.login-container {
+    background: var(--bg-color);
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    border-radius: 0;
+    overflow: hidden;
+}
+
+/* Lado Esquerdo: Imagem de Capa */
+.login-brand {
+    width: 55%;
+    background-image: url('../ujnotescapa.png'); /* Ajuste o caminho se necessário */
+    background-size: cover; /* Preenche perfeitamente sem distorcer */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #2b2b2b;
+}
+
+.brand-content {
+    max-width: 380px;
+    color: white;
+}
+
+.login-box {
+    width: 45%;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #fafbfc;
+}
+
+.login-form-wrapper {
+    width: 100%;
+    max-width: 420px;
+    background: white;
+    padding: 45px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--gray-border);
+}
+
+.login-badge {
+    background-color: rgba(153, 51, 51, 0.1);
+    color: var(--red);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+    margin-bottom: 20px;
+}
+
+.login-box h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--navy-blue);
+    margin-bottom: 10px;
+}
+
+.login-desc {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+/* Botão Moderno de Login com Google */
+.btn-google-login {
+    width: 100%;
+    background-color: white;
+    color: #333;
+    border: 1px solid var(--gray-border);
+    padding: 14px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.btn-google-login:hover {
+    background-color: #f8f9fa;
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.login-footer-text {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+/* ========================================== */
+/* RESPONSIVIDADE (Celulares e Tablets)       */
+/* ========================================== */
+@media (max-width: 768px) {
+    .login-container {
+        flex-direction: column;
+        overflow-y: auto;
+    }
+    .login-brand {
+        width: 100%;
+        height: 220px; /* Altura ideal da capa no celular */
+        flex-shrink: 0;
+    }
+    .login-box {
+        width: 100%;
+        height: auto;
+        padding: 20px;
+        background-color: white;
+    }
+    .login-form-wrapper {
+        padding: 10px;
+        box-shadow: none;
+        border: none;
+        background: transparent;
+    }
 }
 
 }

@@ -68,7 +68,7 @@ function renderizarCards(data) {
         const dataCriacao = new Date(nota.created_at);
         const dia = String(dataCriacao.getDate()).padStart(2, '0');
         const mes = String(dataCriacao.getMonth() + 1).padStart(2, '0');
-        const corCard = nota.disciplina.length % 2 === 0 ? 'card-navy' : 'card-red';
+        const corCard = Math.random() < 0.5 ? 'card-navy' : 'card-red';
         const conteudoEscapado = nota.conteudo.replace(/"/g, '&quot;');
 
         const cardHTML = `
