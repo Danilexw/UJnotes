@@ -1,0 +1,12 @@
+{
+  "name": "uj-notes",
+  "version": "1.0.0",
+  "description": "App de anotações e gestão acadêmica",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.0.0"
+  }
+}
