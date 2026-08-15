@@ -13,7 +13,7 @@
         <!-- Cabeçalho Exclusivo para Celular -->
         <header class="mobile-header">
             <div class="logo">
-                <span class="logo-uj">UJ</span><span class="logo-notes">NOTES</span>
+                <img src="imgs\ujnotes.png" alt="UJ Notes" style="max-width: 140px; height: auto;">
             </div>
             <button class="btn-menu" id="btn-abrir-menu">☰</button>
         </header>
@@ -24,7 +24,7 @@
             <button class="btn-fechar-menu" id="btn-fechar-menu">✖</button>
             
             <div class="logo">
-                <span class="logo-uj">UJ</span><span class="logo-notes">NOTES</span>
+                <img src="imgs\ujnotes.png" alt="UJ Notes" style="max-width: 140px; height: auto;">
             </div>
             
             <nav class="nav-menu">
@@ -153,7 +153,7 @@
                         <input type="hidden" id="nota-atual-id">
                         <div style="display: flex; gap: 10px;">
                             <button id="btn-editar-nota" class="btn-primary" style="background-color: var(--navy-blue);">EDITAR</button>
-                            <button id="btn-excluir-nota" class="btn-primary" style="background-color: var(--salmon);">EXCLUIR</button>
+                            <button id="btn-excluir-nota" class="btn-primary" style="background-color: var(--red);">EXCLUIR</button>
                         </div>
                     </div>
                     <div style="margin-bottom: 15px; border-bottom: 1px solid var(--gray-border); padding-bottom: 10px;">
@@ -266,7 +266,7 @@
                         </div>
                         <input type="hidden" id="edit-data-id">
                         <div style="display: flex; gap: 10px;">
-                            <button id="btn-excluir-data" class="btn-primary" style="background-color: var(--salmon);">EXCLUIR</button>
+                            <button id="btn-excluir-data" class="btn-primary" style="background-color: var(--red);">EXCLUIR</button>
                             <button id="btn-salvar-edit-data" class="btn-primary" style="background-color: var(--navy-blue);">SALVAR ALTERAÇÕES</button>
                         </div>
                     </div>
@@ -352,7 +352,7 @@
                         <input type="hidden" id="edit-material-id">
                         <input type="hidden" id="edit-material-filepath">
                         <div style="display: flex; gap: 10px;">
-                            <button id="btn-excluir-material" class="btn-primary" style="background-color: var(--salmon);">EXCLUIR</button>
+                            <button id="btn-excluir-material" class="btn-primary" style="background-color: var(--red);">EXCLUIR</button>
                             <button id="btn-salvar-edit-material" class="btn-primary" style="background-color: var(--navy-blue);">SALVAR ALTERAÇÕES</button>
                         </div>
                     </div>
@@ -376,10 +376,11 @@
     </div>
 
     <!-- Cortina de fundo escuro para o menu mobile -->
-    <div id="menu-overlay" class="hidden"></div>
+    <div id="menu-overlay"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase.js"></script>
     <script src="js/app.js"></script>
 </body>
+
 </html>

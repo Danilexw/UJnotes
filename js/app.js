@@ -1,5 +1,6 @@
 let currentUser = null;
 let notasAtuais = []; 
+let todasAsNotas = []; // Armazena a lista completa original para filtros e buscas
 let eventosAtuais = [];
 let materiaisAtuais = []; 
 let dataCalendario = new Date(); 
@@ -56,7 +57,7 @@ window.abrirNotaCompleta = function(idNota) {
 function renderizarCards(data) {
     const notesGrid = document.getElementById('notes-grid');
     notesGrid.innerHTML = '';
-    notasAtuais = data; 
+    notasAtuais = data; // Atualiza a lista exibida atualmente
 
     if (!data || data.length === 0) {
         notesGrid.innerHTML = '<p style="color: var(--navy-blue); font-weight: bold; grid-column: span 2;">Nenhuma anotação encontrada.</p>';
@@ -67,7 +68,7 @@ function renderizarCards(data) {
         const dataCriacao = new Date(nota.created_at);
         const dia = String(dataCriacao.getDate()).padStart(2, '0');
         const mes = String(dataCriacao.getMonth() + 1).padStart(2, '0');
-        const corCard = nota.disciplina.length % 2 === 0 ? 'card-navy' : 'card-salmon';
+        const corCard = nota.disciplina.length % 2 === 0 ? 'card-navy' : 'card-red';
         const conteudoEscapado = nota.conteudo.replace(/"/g, '&quot;');
 
         const cardHTML = `
@@ -92,9 +93,10 @@ async function carregarAnotacoes() {
 
     const { data, error } = await window.supabase.from('anotacoes').select('*').order('created_at', { ascending: false });
     if (error) {
-        notesGrid.innerHTML = '<p style="color: var(--salmon); font-weight: bold; grid-column: span 2;">Erro ao carregar as anotações.</p>';
+        notesGrid.innerHTML = '<p style="color: var(--red); font-weight: bold; grid-column: span 2;">Erro ao carregar as anotações.</p>';
         return;
     }
+    todasAsNotas = data; // Salva a lista completa original
     renderizarCards(data);
 }
 
@@ -137,7 +139,7 @@ async function renderizarCalendario() {
         
         if (faltaNoDia) {
             divDia.classList.add('day-marked');
-            faltaNoDia.disciplina.length % 2 === 0 ? divDia.classList.add('card-navy') : divDia.classList.add('card-salmon');
+            faltaNoDia.disciplina.length % 2 === 0 ? divDia.classList.add('card-navy') : divDia.classList.add('card-red');
         }
         
         divDia.addEventListener('click', (e) => abrirPopUpFalta(dia, mes, ano, e.target));
@@ -248,7 +250,7 @@ async function carregarDashboardFaltas() {
     dashboardContainer.innerHTML = '';
     materiasPadrao.forEach((disciplina, index) => {
         const quantidade = faltasPorDisciplina[disciplina] || 0;
-        const corCard = index % 2 === 0 ? 'card-salmon' : 'card-navy';
+        const corCard = index % 2 === 0 ? 'card-red' : 'card-navy';
         const cardHTML = `<div class="dash-card ${corCard}"><div class="dash-number">${quantidade}</div><div class="dash-label">faltas p/ aula</div><div class="dash-subject">${disciplina.toUpperCase()}</div></div>`;
         dashboardContainer.insertAdjacentHTML('beforeend', cardHTML);
     });
@@ -269,7 +271,7 @@ function renderizarCardsDatas(data) {
 
     data.forEach(evento => {
         const [ano, mes, dia] = evento.data_entrega.split('-');
-        const corCard = evento.disciplina.length % 2 === 0 ? 'card-navy' : 'card-salmon';
+        const corCard = evento.disciplina.length % 2 === 0 ? 'card-navy' : 'card-red';
         const cardHTML = `
             <div class="card ${corCard}" style="cursor: pointer;" onclick="abrirEdicaoEvento('${evento.id}')">
                 <div class="card-tag">Matéria: ${evento.disciplina.toUpperCase()}</div>
@@ -307,7 +309,7 @@ async function carregarDatas() {
 
     const { data, error } = await window.supabase.from('datas').select('*').order('data_entrega', { ascending: true });
     if (error) {
-        datasGrid.innerHTML = '<p style="color: var(--salmon); font-weight: bold; grid-column: span 2;">Erro ao carregar os eventos.</p>';
+        datasGrid.innerHTML = '<p style="color: var(--red); font-weight: bold; grid-column: span 2;">Erro ao carregar os eventos.</p>';
         return;
     }
     renderizarCardsDatas(data);
@@ -327,27 +329,37 @@ function renderizarCardsMateriais(data) {
     }
 
     data.forEach(material => {
+        const isImage = /\.(jpg|jpeg|png|gif)$/i.test(material.arquivo_nome);
         const dataUpload = new Date(material.created_at);
         const dia = String(dataUpload.getDate()).padStart(2, '0');
         const mes = String(dataUpload.getMonth() + 1).padStart(2, '0');
-        const corCard = material.disciplina.length % 2 === 0 ? 'card-navy' : 'card-salmon';
+        const corCard = material.disciplina.length % 2 === 0 ? 'card-navy' : 'card-red';
+
+        const previewHTML = isImage 
+            ? `<img src="${material.arquivo_url}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;">`
+            : `<div style="width: 100%; height: 120px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-bottom: 10px; font-size: 3rem;">📄</div>`;
 
         const cardHTML = `
             <div class="card ${corCard}">
+                ${previewHTML}
                 <div class="card-tag">Matéria: ${material.disciplina.toUpperCase()}</div>
-                <h3 style="margin-top: 15px; font-size: 1.1rem; font-weight: normal;">${material.titulo}</h3>
-                <p style="font-size: 0.8rem; margin-top: 5px; opacity: 0.8;">Arquivo: ${material.arquivo_nome}</p>
-                <div style="margin-top: auto; padding-top: 20px;">
-                    <a href="${material.arquivo_url}" target="_blank" download style="text-decoration: none;">
-                        <button class="btn-outline w-100" style="background-color: white; color: var(--navy-blue); display: flex; justify-content: center; align-items: center; gap: 10px;">
-                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                           Baixar Arquivo
-                        </button>
-                    </a>
-                </div>
-                <div class="card-footer" style="margin-top: 15px;">
-                    <span>Enviado por: ${material.nome_autor} (${dia}/${mes})</span>
-                    <p class="btn-opcoes" style="cursor: pointer; padding-left: 10px;" onclick="event.stopPropagation(); abrirEdicaoMaterial('${material.id}')">⋮</p>
+                <h3 style="margin: 5px 0; font-size: 1.1rem; line-height: 1.2;">${material.titulo}</h3>
+                <p style="font-size: 0.8rem; opacity: 0.8; margin-bottom: 5px;">${material.arquivo_nome}</p>
+                
+                <a href="${material.arquivo_url}" download="${material.arquivo_nome}" style="text-decoration: none; display: block; width: 100%;">
+                    <button class="btn-modern-download">
+                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                           <polyline points="7 10 12 15 17 10"></polyline>
+                           <line x1="12" y1="15" x2="12" y2="3"></line>
+                       </svg>
+                       Baixar Arquivo
+                    </button>
+                </a>
+                
+                <div class="card-footer" style="margin-top: auto; font-size: 0.75rem; display: flex; justify-content: space-between; align-items: center; padding-top: 10px;">
+                    <span>Enviado em: ${dia}/${mes}</span>
+                    <i class="btn-opcoes" style="font-style: normal; cursor: pointer; font-size: 1.1rem; padding: 0 5px;" onclick="event.stopPropagation(); abrirEdicaoMaterial('${material.id}')">⋮</i>
                 </div>
             </div>
         `;
@@ -379,7 +391,7 @@ async function carregarMateriais() {
 
     const { data, error } = await window.supabase.from('materiais').select('*').order('created_at', { ascending: false });
     if (error) {
-        materiaisGrid.innerHTML = '<p style="color: var(--salmon); font-weight: bold; grid-column: span 2;">Erro ao carregar os materiais.</p>';
+        materiaisGrid.innerHTML = '<p style="color: var(--red); font-weight: bold; grid-column: span 2;">Erro ao carregar os materiais.</p>';
         return;
     }
     renderizarCardsMateriais(data);
@@ -413,25 +425,37 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // ==========================================
     // SISTEMA DE PESQUISA E FILTRO DE ANOTAÇÕES
+    // ==========================================
     const searchNotesInput = document.getElementById('search-notes');
-    if (searchNotesInput) {
-        searchNotesInput.addEventListener('input', (e) => {
-            const termo = e.target.value.toLowerCase().trim();
-            const notasFiltradas = notasAtuais.filter(nota => {
-                return nota.conteudo.toLowerCase().includes(termo) || nota.disciplina.toLowerCase().includes(termo) || nota.nome_autor.toLowerCase().includes(termo);
+    
+    function aplicarFiltroEBusca() {
+        const termo = searchNotesInput ? searchNotesInput.value.toLowerCase().trim() : '';
+        const materiaSelecionada = document.getElementById('select-filtro-materia').value;
+
+        // Sempre filtra partindo de TODAS as notas originais guardadas
+        let notasFiltradas = todasAsNotas;
+
+        // 1. Aplica o filtro de matéria se não for 'Todas'
+        if (materiaSelecionada && materiaSelecionada !== 'Todas') {
+            notasFiltradas = notasFiltradas.filter(n => n.disciplina === materiaSelecionada);
+        }
+
+        // 2. Aplica o termo de pesquisa se houver algo digitado
+        if (termo !== '') {
+            notasFiltradas = notasFiltradas.filter(nota => {
+                const textoCompleto = Object.values(nota).join(' ').toLowerCase();
+                return textoCompleto.includes(termo);
             });
-            if (termo === '') {
-                const materiaSelecionada = document.getElementById('select-filtro-materia').value;
-                if (materiaSelecionada !== 'Todas') {
-                    renderizarCards(notasAtuais.filter(n => n.disciplina === materiaSelecionada));
-                    return;
-                }
-                renderizarCards(notasAtuais); 
-                return;
-            }
-            renderizarCards(notasFiltradas);
-        });
+        }
+
+        // Renderiza o resultado final na tela
+        renderizarCards(notasFiltradas);
+    }
+
+    if (searchNotesInput) {
+        searchNotesInput.addEventListener('input', aplicarFiltroEBusca);
     }
 
     const btnAbrirFiltro = document.getElementById('btn-abrir-filtro');
@@ -446,21 +470,23 @@ document.addEventListener('DOMContentLoaded', () => {
         btnAplicarFiltro.addEventListener('click', () => {
             const materiaSelecionada = selectFiltro.value;
             popupFiltro.classList.add('hidden'); 
-            if(searchNotesInput) searchNotesInput.value = '';
+            
             if (materiaSelecionada === 'Todas') {
-                renderizarCards(notasAtuais); 
                 btnAbrirFiltro.style.backgroundColor = "transparent";
                 btnAbrirFiltro.style.color = "var(--navy-blue)";
             } else {
-                renderizarCards(notasAtuais.filter(n => n.disciplina === materiaSelecionada));
                 btnAbrirFiltro.style.backgroundColor = "var(--navy-blue)";
                 btnAbrirFiltro.style.color = "white";
             }
+            aplicarFiltroEBusca();
         });
 
         btnLimparFiltro.addEventListener('click', () => {
             selectFiltro.value = 'Todas';
-            btnAplicarFiltro.click(); 
+            btnAbrirFiltro.style.backgroundColor = "transparent";
+            btnAbrirFiltro.style.color = "var(--navy-blue)";
+            if (searchNotesInput) searchNotesInput.value = '';
+            aplicarFiltroEBusca(); 
         });
 
         document.addEventListener('click', (e) => {
@@ -588,14 +614,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnVoltarDatas = document.getElementById('btn-voltar-datas');
     const datasGridElement = document.getElementById('datas-grid');
     const createDataForm = document.getElementById('create-data-form');
+    const datasHeader = document.querySelector('#datas .top-bar'); 
+    const sectionHeader = document.querySelector('#datas .section-header');
 
     if(btnCriarEvento && btnVoltarDatas) {
         btnCriarEvento.addEventListener('click', () => {
             datasGridElement.classList.add('hidden');
+            if (datasHeader) datasHeader.classList.add('hidden');
+            if (sectionHeader) sectionHeader.classList.add('hidden');
             createDataForm.classList.remove('hidden');
         });
         btnVoltarDatas.addEventListener('click', () => {
             createDataForm.classList.add('hidden');
+            if (datasHeader) datasHeader.classList.remove('hidden');
+            if (sectionHeader) sectionHeader.classList.remove('hidden');
             datasGridElement.classList.remove('hidden');
         });
     }
@@ -615,7 +647,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const nomeAutor = currentUser.user_metadata?.full_name || 'Aluno';
             const { error } = await window.supabase.from('datas').insert([{ user_id: currentUser.id, nome_autor: nomeAutor, disciplina: materiaData, titulo: tituloData, data_entrega: dataEntrega }]);
 
-            btnSalvarData.innerText = "SALVAR DATA +";
+            btnSalvarData.innerText = "SALVAR DATA";
             btnSalvarData.disabled = false;
 
             if (error) alert("Erro ao salvar o evento.");
@@ -637,7 +669,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (termo.length === 0) { carregarDatas(); return; }
             datasGrid.innerHTML = '<p style="color: var(--navy-blue); font-weight: bold; grid-column: span 2;">Buscando...</p>';
             const { data, error } = await window.supabase.from('datas').select('*').or(`titulo.ilike.%${termo}%, disciplina.ilike.%${termo}%`).order('data_entrega', { ascending: true });
-            if (error) datasGrid.innerHTML = '<p style="color: var(--salmon); font-weight: bold; grid-column: span 2;">Erro na pesquisa.</p>';
+            if (error) datasGrid.innerHTML = '<p style="color: var(--red); font-weight: bold; grid-column: span 2;">Erro na pesquisa.</p>';
             else renderizarCardsDatas(data);
         });
     }
@@ -846,11 +878,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (termo.length === 0) { carregarMateriais(); return; }
             grid.innerHTML = '<p style="color: var(--navy-blue); font-weight: bold; grid-column: span 2;">Buscando...</p>';
             const { data, error } = await window.supabase.from('materiais').select('*').or(`titulo.ilike.%${termo}%, disciplina.ilike.%${termo}%, arquivo_nome.ilike.%${termo}%`).order('created_at', { ascending: false });
-            if (error) grid.innerHTML = '<p style="color: var(--salmon); font-weight: bold; grid-column: span 2;">Erro na pesquisa.</p>';
+            if (error) grid.innerHTML = '<p style="color: var(--red); font-weight: bold; grid-column: span 2;">Erro na pesquisa.</p>';
             else renderizarCardsMateriais(data);
         });
     }
-// ==========================================
+
+    // ==========================================
     // CONTROLES DO MENU MOBILE E OVERLAY
     // ==========================================
     const btnAbrirMenu = document.getElementById('btn-abrir-menu');
@@ -864,20 +897,15 @@ document.addEventListener('DOMContentLoaded', () => {
         menuOverlay.classList.remove('aberto');
     }
 
-    if (btnAbrirMenu && btnFecharMenu && sidebar && menuOverlay) {
-        // Abre o menu e a cortina
+    if (btnAbrirMenu && sidebar && menuOverlay) {
         btnAbrirMenu.addEventListener('click', () => {
             sidebar.classList.add('aberto');
             menuOverlay.classList.add('aberto');
         });
 
-        // Fecha ao clicar no X
-        btnFecharMenu.addEventListener('click', fecharMenu);
-
-        // Fecha ao clicar na cortina escura
+        if (btnFecharMenu) btnFecharMenu.addEventListener('click', fecharMenu);
         menuOverlay.addEventListener('click', fecharMenu);
 
-        // Fecha automaticamente se clicar em alguma aba
         linksNavegacao.forEach(link => {
             link.addEventListener('click', () => {
                 if (window.innerWidth <= 768) {
@@ -886,5 +914,4 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
-
 });
