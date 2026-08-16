@@ -4,14 +4,14 @@
 :root {
     --navy-blue: #1e293b;
     --navy-hover: #0f172a;
-    --red: #993333;
+    --red: #bb1d1d;
     --red-hover: #7f1d1d;
     --bg-color: #f8fafc;
     --card-bg: #ffffff;
     --text-main: #1e293b;
     --text-muted: #64748b;
     --gray-border: #e2e8f0;
-    --sidebar-bg: #993333;
+    --sidebar-bg: #b81414;
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 16px;
@@ -329,6 +329,21 @@ body {
     margin-top: 15px;
 }
 
+/* Melhora a leitura do select de matérias */
+.form-select-inline {
+    background-color: var(--navy-blue) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    padding: 12px 16px !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+}
+
+/* Opcional: Melhora o hover para destacar a escolha */
+.form-select-inline:hover {
+    background-color: var(--navy-hover) !important;
+}
+
 
 /* ========================================== */
 /* 6. CARDS (ANOTAÇÕES, DATAS, MATERIAIS)     */
@@ -366,7 +381,7 @@ body {
 }
 
 .card.card-red {
-    background: linear-gradient(135deg, #993333 0%, #7f1d1d 100%);
+    background: linear-gradient(135deg, #b81414 0%, #b81414 100%);
     color: white;
     border: none;
 }
