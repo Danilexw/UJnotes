@@ -105,10 +105,25 @@ async function carregarAnotacoes() {
 // ==========================================
 async function buscarDiasComFalta(ano, mes) {
     if (!currentUser) return [];
-    const { data } = await window.supabase.from('faltas').select('data_falta, disciplina')
+
+    // Pega o primeiro dia do mês (ex: '2026-09-01')
+    const primeiroDia = `${ano}-${String(mes + 1).padStart(2, '0')}-01`;
+    
+    // Descobre dinamicamente o último dia real do mês (ex: 30 para setembro, 31 para agosto)
+    const ultimoDiaNumero = new Date(ano, mes + 1, 0).getDate();
+    const ultimoDia = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(ultimoDiaNumero).padStart(2, '0')}`;
+
+    const { data, error } = await window.supabase.from('faltas')
+        .select('data_falta, disciplina')
         .eq('user_id', currentUser.id)
-        .gte('data_falta', `${ano}-${String(mes + 1).padStart(2, '0')}-01`)
-        .lte('data_falta', `${ano}-${String(mes + 1).padStart(2, '0')}-31`);
+        .gte('data_falta', primeiroDia)
+        .lte('data_falta', ultimoDia);
+
+    if (error) {
+        console.error("Erro ao buscar faltas:", error);
+        return [];
+    }
+
     return data || [];
 }
 
