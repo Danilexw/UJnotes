@@ -1,6 +1,6 @@
 let currentUser = null;
 let notasAtuais = []; 
-let todasAsNotas = []; // Armazena a lista completa original para filtros e buscas
+let todasAsNotas = []; 
 let eventosAtuais = [];
 let materiaisAtuais = []; 
 let dataCalendario = new Date(); 
@@ -57,7 +57,7 @@ window.abrirNotaCompleta = function(idNota) {
 function renderizarCards(data) {
     const notesGrid = document.getElementById('notes-grid');
     notesGrid.innerHTML = '';
-    notasAtuais = data; // Atualiza a lista exibida atualmente
+    notasAtuais = data; 
 
     if (!data || data.length === 0) {
         notesGrid.innerHTML = '<p style="color: var(--navy-blue); font-weight: bold; grid-column: span 2;">Nenhuma anotação encontrada.</p>';
@@ -96,7 +96,7 @@ async function carregarAnotacoes() {
         notesGrid.innerHTML = '<p style="color: var(--red); font-weight: bold; grid-column: span 2;">Erro ao carregar as anotações.</p>';
         return;
     }
-    todasAsNotas = data; // Salva a lista completa original
+    todasAsNotas = data; 
     renderizarCards(data);
 }
 
@@ -106,10 +106,7 @@ async function carregarAnotacoes() {
 async function buscarDiasComFalta(ano, mes) {
     if (!currentUser) return [];
 
-    // Pega o primeiro dia do mês (ex: '2026-09-01')
     const primeiroDia = `${ano}-${String(mes + 1).padStart(2, '0')}-01`;
-    
-    // Descobre dinamicamente o último dia real do mês (ex: 30 para setembro, 31 para agosto)
     const ultimoDiaNumero = new Date(ano, mes + 1, 0).getDate();
     const ultimoDia = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(ultimoDiaNumero).padStart(2, '0')}`;
 
@@ -206,14 +203,13 @@ function configurarEventosPopUp() {
         botao.addEventListener('click', async (e) => {
             const acao = e.currentTarget.getAttribute('data-acao');
             const materia = e.currentTarget.getAttribute('data-materia');
-            const textoOriginal = e.currentTarget.innerText;
             e.currentTarget.innerText = "Processando...";
             e.currentTarget.disabled = true;
 
             if (acao === 'salvar') await registrarFalta(materia);
             else if (acao === 'excluir') {
                 const idFalta = e.currentTarget.getAttribute('data-id');
-                await excluirFalta(idFalta, materia);
+                await excluirFalta(idFalta);
             }
         });
     });
@@ -234,7 +230,7 @@ async function registrarFalta(disciplina) {
     }
 }
 
-async function excluirFalta(id, disciplina) {
+async function excluirFalta(id) {
     if (!currentUser) return;
     const { error } = await window.supabase.from('faltas').delete().eq('id', id);
     if (error) alert("Erro ao remover a falta.");
@@ -287,12 +283,16 @@ function renderizarCardsDatas(data) {
     data.forEach(evento => {
         const [ano, mes, dia] = evento.data_entrega.split('-');
         const corCard = evento.disciplina.length % 2 === 0 ? 'card-navy' : 'card-red';
+        
+        const descricaoHTML = evento.descricao ? `<p class="card-text" style="margin-top: 8px; font-size: 0.9rem; opacity: 0.9;">${evento.descricao}</p>` : '';
+
         const cardHTML = `
             <div class="card ${corCard}" style="cursor: pointer;" onclick="abrirEdicaoEvento('${evento.id}')">
                 <div class="card-tag">Matéria: ${evento.disciplina.toUpperCase()}</div>
-                <h3 style="margin-top: 15px; font-size: 1.1rem; font-weight: normal;">${evento.titulo}</h3>
-                <h2 style="font-size: 1.8rem; margin: 5px 0;">Entrega: ${dia}/${mes}</h2>
-                <div class="card-footer" style="margin-top: auto; padding-top: 20px;">
+                <h3 style="margin-top: 10px; font-size: 1.1rem; font-weight: 600;">${evento.titulo}</h3>
+                ${descricaoHTML}
+                <h2 style="font-size: 1.6rem; margin: 8px 0;">Entrega: ${dia}/${mes}</h2>
+                <div class="card-footer" style="margin-top: auto; padding-top: 15px;">
                     <span>Criado por: ${evento.nome_autor}</span>
                     <p class="btn-opcoes" onclick="event.stopPropagation(); abrirEdicaoEvento('${evento.id}')">⋮</p>
                 </div>
@@ -309,11 +309,10 @@ window.abrirEdicaoEvento = function(idEvento) {
     document.getElementById('edit-data-id').value = evento.id;
     document.getElementById('edit-select-materia-data').value = evento.disciplina;
     document.getElementById('edit-titulo-data').value = evento.titulo;
+    document.getElementById('edit-descricao-data').value = evento.descricao || ''; 
     document.getElementById('edit-data-entrega').value = evento.data_entrega;
 
-    document.getElementById('datas-grid').classList.add('hidden');
-    document.querySelector('#datas .top-bar').classList.add('hidden'); 
-    document.querySelector('#datas .section-header').classList.add('hidden'); 
+    document.getElementById('datas-list-container').style.display = 'none';
     document.getElementById('edit-data-form').classList.remove('hidden');
 };
 
@@ -449,15 +448,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const termo = searchNotesInput ? searchNotesInput.value.toLowerCase().trim() : '';
         const materiaSelecionada = document.getElementById('select-filtro-materia').value;
 
-        // Sempre filtra partindo de TODAS as notas originais guardadas
         let notasFiltradas = todasAsNotas;
 
-        // 1. Aplica o filtro de matéria se não for 'Todas'
         if (materiaSelecionada && materiaSelecionada !== 'Todas') {
             notasFiltradas = notasFiltradas.filter(n => n.disciplina === materiaSelecionada);
         }
 
-        // 2. Aplica o termo de pesquisa se houver algo digitado
         if (termo !== '') {
             notasFiltradas = notasFiltradas.filter(nota => {
                 const textoCompleto = Object.values(nota).join(' ').toLowerCase();
@@ -465,7 +461,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Renderiza o resultado final na tela
         renderizarCards(notasFiltradas);
     }
 
@@ -624,26 +619,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Datas Importantes
+    // Datas Importantes (Estrutura Segura com Wrapper)
     const btnCriarEvento = document.getElementById('btn-criar-evento');
     const btnVoltarDatas = document.getElementById('btn-voltar-datas');
-    const datasGridElement = document.getElementById('datas-grid');
+    const datasListContainer = document.getElementById('datas-list-container');
     const createDataForm = document.getElementById('create-data-form');
-    const datasHeader = document.querySelector('#datas .top-bar'); 
-    const sectionHeader = document.querySelector('#datas .section-header');
 
-    if(btnCriarEvento && btnVoltarDatas) {
+    if(btnCriarEvento && btnVoltarDatas && datasListContainer && createDataForm) {
         btnCriarEvento.addEventListener('click', () => {
-            datasGridElement.classList.add('hidden');
-            if (datasHeader) datasHeader.classList.add('hidden');
-            if (sectionHeader) sectionHeader.classList.add('hidden');
+            datasListContainer.style.display = 'none';
             createDataForm.classList.remove('hidden');
         });
         btnVoltarDatas.addEventListener('click', () => {
             createDataForm.classList.add('hidden');
-            if (datasHeader) datasHeader.classList.remove('hidden');
-            if (sectionHeader) sectionHeader.classList.remove('hidden');
-            datasGridElement.classList.remove('hidden');
+            datasListContainer.style.display = 'block';
         });
     }
 
@@ -653,6 +642,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const tituloData = document.getElementById('titulo-data').value;
             const materiaData = document.getElementById('select-materia-data').value;
             const dataEntrega = document.getElementById('data-entrega').value;
+            const descricaoData = document.getElementById('descricao-data').value;
 
             if (!tituloData.trim() || !dataEntrega) { alert("Preencha título e data."); return; }
 
@@ -660,7 +650,14 @@ document.addEventListener('DOMContentLoaded', () => {
             btnSalvarData.disabled = true;
 
             const nomeAutor = currentUser.user_metadata?.full_name || 'Aluno';
-            const { error } = await window.supabase.from('datas').insert([{ user_id: currentUser.id, nome_autor: nomeAutor, disciplina: materiaData, titulo: tituloData, data_entrega: dataEntrega }]);
+            const { error } = await window.supabase.from('datas').insert([{ 
+                user_id: currentUser.id, 
+                nome_autor: nomeAutor, 
+                disciplina: materiaData, 
+                titulo: tituloData, 
+                descricao: descricaoData, 
+                data_entrega: dataEntrega 
+            }]);
 
             btnSalvarData.innerText = "SALVAR DATA";
             btnSalvarData.disabled = false;
@@ -669,8 +666,9 @@ document.addEventListener('DOMContentLoaded', () => {
             else {
                 document.getElementById('titulo-data').value = '';
                 document.getElementById('data-entrega').value = '';
+                document.getElementById('descricao-data').value = '';
                 createDataForm.classList.add('hidden');
-                datasGridElement.classList.remove('hidden');
+                datasListContainer.style.display = 'block';
                 carregarDatas(); 
             }
         });
@@ -691,16 +689,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const btnFecharEditData = document.getElementById('btn-fechar-edit-data');
     const editDataForm = document.getElementById('edit-data-form');
-    const datasGridElementForEdit = document.getElementById('datas-grid'); 
-    const datasTopBar = document.querySelector('#datas .top-bar');
-    const datasSectionHeader = document.querySelector('#datas .section-header');
 
     if (btnFecharEditData) {
         btnFecharEditData.addEventListener('click', () => {
             editDataForm.classList.add('hidden');
-            datasGridElementForEdit.classList.remove('hidden');
-            datasTopBar.classList.remove('hidden');
-            datasSectionHeader.classList.remove('hidden');
+            datasListContainer.style.display = 'block';
         });
     }
 
@@ -711,13 +704,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const novaMateria = document.getElementById('edit-select-materia-data').value;
             const novoTitulo = document.getElementById('edit-titulo-data').value;
             const novaDataEntrega = document.getElementById('edit-data-entrega').value;
+            const novaDescricao = document.getElementById('edit-descricao-data').value;
 
             if (!novoTitulo.trim() || !novaDataEntrega) { alert("Preencha título e data!"); return; }
 
             btnSalvarEditData.innerText = "Salvando...";
             btnSalvarEditData.disabled = true;
 
-            const { error } = await window.supabase.from('datas').update({ disciplina: novaMateria, titulo: novoTitulo, data_entrega: novaDataEntrega }).eq('id', idEvento);
+            const { error } = await window.supabase.from('datas').update({ 
+                disciplina: novaMateria, 
+                titulo: novoTitulo, 
+                descricao: novaDescricao, 
+                data_entrega: novaDataEntrega 
+            }).eq('id', idEvento);
 
             btnSalvarEditData.disabled = false;
             btnSalvarEditData.innerText = "SALVAR ALTERAÇÕES";

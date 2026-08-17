@@ -188,44 +188,51 @@
                 <div class="dashboard-grid"></div>
             </section>
 
-            <!-- ================= ABA: HORÁRIOS ================= -->
+                        <!-- ABA: HORÁRIOS -->
             <section id="horarios" class="tab-content hidden">
                 <h2 class="title-oswald">HORÁRIOS DA SEMANA</h2>
                 <div class="horario-container">
-                    <p>Faça o upload do print da sua grade curricular.</p>
-                    <input type="file" id="upload-horario" accept="image/*" class="file-input-margin">
-                    <div id="horario-preview" class="horario-preview-box">
-                        Nenhuma imagem selecionada.
+                    <p>Grade curricular oficial da Turma B.</p>
+                    
+                    <div id="horario-preview" class="horario-preview-box" style="margin-top: 20px; text-align: center;">
+                        <a href="imgs/horarioturmab.png" target="_blank" title="Clique para ampliar">
+                            <img src="imgs/horarioturmab.png" alt="Horários da Turma B" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        </a>
+                        <p style="margin-top: 8px; font-size: 0.8rem; color: #666;">Toque na imagem para ampliar.</p>
                     </div>
                 </div>
             </section>
+            
+  <!-- ================= ABA: DATAS ================= -->
+<section id="datas" class="tab-content hidden">
+    
+    <!-- ENVOLVA TUDO ISSO DENTRO DESTA DIV: -->
+    <div id="datas-list-container">
+        <div class="top-bar">
+            <div class="search-container">
+                <input type="text" placeholder="Pesquise eventos..." id="search-datas" class="search-input">
+            </div>
+        </div>
 
-            <!-- ================= ABA: DATAS ================= -->
-            <section id="datas" class="tab-content hidden">
-                <div class="top-bar">
-                    <div class="search-container">
-                        <input type="text" placeholder="Pesquise eventos..." id="search-datas" class="search-input">
-                    </div>
-                </div>
+        <div class="section-header">
+            <h2 class="title-oswald">DATAS IMPORTANTES</h2>
+            <button class="btn-primary" id="btn-criar-evento">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                CRIAR EVENTO
+            </button>
+        </div>
 
-                <div class="section-header">
-                    <h2 class="title-oswald">DATAS IMPORTANTES</h2>
-                    <button class="btn-primary" id="btn-criar-evento">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                        </svg>
-                        CRIAR EVENTO
-                    </button>
-                </div>
-
-                <div class="cards-grid" id="datas-grid"></div>
+        <div class="cards-grid" id="datas-grid"></div>
+    </div>
 
                 <div id="create-data-form" class="hidden">
-                    <div class="section-header margin-top-md">
+                    <div class="section-header margin-top-md form-header-mobile">
                         <div class="header-title-group">
                             <button class="btn-icon" id="btn-voltar-datas">↩</button>
-                            <h2 class="title-oswald">CRIANDO NOVO EVENTO</h2>
+                            <h2 class="title-oswald">NOVO EVENTO</h2>
                         </div>
                         <div class="header-actions">
                             <select id="select-materia-data" class="btn-primary form-select-inline">
@@ -236,11 +243,15 @@
                                 <option value="Edição e Criação">Edição e Criação</option>
                                 <option value="Legislação e Gestão do Design">Legislação e Gestão do Design</option>
                             </select>
-                            <button id="btn-salvar-data" class="btn-primary">SALVAR DATA +</button>
+                            <button id="btn-salvar-data" class="btn-primary">SALVAR +</button>
                         </div>
                     </div>
                     <div class="form-stack">
                         <input type="text" id="titulo-data" placeholder="Título do Projeto/Evento" class="form-control-input">
+                        
+                        <!-- NOVO CAMPO DE DESCRIÇÃO -->
+                        <textarea id="descricao-data" placeholder="Descrição curta da atividade (opcional)..." class="form-control-textarea"></textarea>
+
                         <div class="form-inline-group">
                             <label for="data-entrega" class="text-navy font-weight-600">Data de Entrega:</label>
                             <input type="date" id="data-entrega" class="form-date-input">
@@ -249,7 +260,7 @@
                 </div>
 
                 <div id="edit-data-form" class="hidden">
-                    <div class="section-header margin-top-md">
+                    <div class="section-header margin-top-md form-header-mobile">
                         <div class="header-title-group">
                             <button class="btn-icon" id="btn-fechar-edit-data">↩</button>
                             <h2 class="title-oswald">EDITAR EVENTO</h2>
@@ -257,7 +268,7 @@
                         <input type="hidden" id="edit-data-id">
                         <div class="header-actions">
                             <button id="btn-excluir-data" class="btn-primary bg-red">EXCLUIR</button>
-                            <button id="btn-salvar-edit-data" class="btn-primary bg-navy">SALVAR ALTERAÇÕES</button>
+                            <button id="btn-salvar-edit-data" class="btn-primary bg-navy">SALVAR</button>
                         </div>
                     </div>
                     <div class="form-stack">
@@ -270,6 +281,10 @@
                             <option value="Legislação e Gestão do Design">Legislação e Gestão do Design</option>
                         </select>
                         <input type="text" id="edit-titulo-data" placeholder="Título do Projeto/Evento" class="form-control-input">
+                        
+                        <!-- NOVO CAMPO DE DESCRIÇÃO NA EDIÇÃO -->
+                        <textarea id="edit-descricao-data" placeholder="Descrição curta da atividade (opcional)..." class="form-control-textarea"></textarea>
+
                         <div class="form-inline-group">
                             <label for="edit-data-entrega" class="text-navy font-weight-600">Data de Entrega:</label>
                             <input type="date" id="edit-data-entrega" class="form-date-input">

@@ -775,4 +775,64 @@ body {
     #menu-overlay.aberto {
         display: block;
     }
+/* Ajuste de responsividade para a imagem de horários no celular */
+.horario-preview-box img {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    border-radius: var(--radius-md);
+    cursor: zoom-in;
+    transition: transform 0.2s ease;
+}
+
+@media (max-width: 768px) {
+    .horario-container {
+        padding: 15px !important;
+    }
+    .horario-preview-box {
+        padding: 10px !important;
+        border: none !important; /* Remove a borda tracejada no celular para limpar o visual */
+        background: transparent !important;
+    }
+}
+
+/* ========================================== */
+/* AJUSTES MOBILE PARA A ABA DE DATAS         */
+/* ========================================== */
+.form-control-textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--gray-border);
+    font-size: 1rem;
+    outline: none;
+    background: white;
+    resize: vertical;
+    min-height: 100px;
+    font-family: 'Inter', sans-serif;
+}
+
+.form-control-textarea:focus {
+    border-color: var(--navy-blue);
+    box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1);
+}
+
+@media (max-width: 768px) {
+    .form-header-mobile {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+    .form-header-mobile .header-actions {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+    }
+    .form-header-mobile .header-actions select {
+        flex-grow: 1 !important;
+        max-width: 65% !important;
+    }
+}
+
 }
