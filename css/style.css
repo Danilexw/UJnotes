@@ -344,7 +344,6 @@ body {
     background-color: var(--navy-hover) !important;
 }
 
-
 /* ========================================== */
 /* 6. CARDS (ANOTAÇÕES, DATAS, MATERIAIS)     */
 /* ========================================== */
@@ -362,6 +361,7 @@ body {
     border: 1px solid var(--gray-border);
     display: flex;
     flex-direction: column;
+    height: 260px; /* Altura padronizada ideal */
     position: relative;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -398,7 +398,7 @@ body {
 
 /* Melhora a legibilidade apenas nos cards vermelhos */
 .card.card-red .card-date {
-    color: #ff9191 !important; /* Vermelho bem claro/pastel para contraste perfeito */
+    color: #ff9191 !important;
     font-weight: 500;
 }
 
@@ -421,25 +421,85 @@ body {
     margin-bottom: 12px;
 }
 
+/* Zera qualquer margem indesejada que esteja empurrando o rodapé */
 .card-text {
     font-size: 0.95rem;
-    line-height: 1.6;
-    margin-bottom: 20px;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
+    line-height: 1.4;
+    margin-top: 8px;
+    margin-bottom: auto; 
+    max-height: 80px; 
     overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* Corta visualmente após 3 linhas */
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
+/* Garante que elementos de formatação dentro do card respeitem o corte */
+.card-text b, .card-text strong { font-weight: bold; }
+.card-text i, .card-text em { font-style: italic; }
+.card-text u { text-decoration: underline; }
+.card-text ul, .card-text ol { padding-left: 15px; }
+
 .card-footer {
-    margin-top: auto;
-    padding-top: 16px;
+    margin-top: auto !important; /* Força o rodapé a colar na parte inferior */
+    padding-top: 10px;
     border-top: 1px solid var(--gray-border);
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 0.85rem;
     color: var(--text-muted);
+    background: inherit;
+    flex-shrink: 0;
+}
+
+.btn-opcoes {
+    font-weight: bold;
+    font-size: 1.2rem;
+    padding: 0 6px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.btn-opcoes:hover {
+    background: rgba(0,0,0,0.05);
+}
+
+/* ========================================== */
+/* AJUSTE DE EXIBIÇÃO DO CONTEÚDO NOS CARDS   */
+/* ========================================== */
+.card-content, 
+.note-card-body, 
+.card p {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+/* Garante que listas e formatações apareçam corretamente nos cards da home */
+.card ul, .note-card ul {
+    padding-left: 20px !important;
+    list-style-type: disc !important;
+}
+
+.card ol, .note-card ol {
+    padding-left: 20px !important;
+    list-style-type: decimal !important;
+}
+
+.card-footer {
+    margin-top: auto; /* Mantém o rodapé colado na base do card */
+    padding-top: 12px;
+    border-top: 1px solid var(--gray-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    background: inherit; /* Garante que acompanhe o fundo do card */
 }
 
 .btn-opcoes {
@@ -722,9 +782,107 @@ body {
     align-items: center;
 }
 
+/* ========================================== */
+/* LIMITAR TAMANHO DOS CARDS NA HOME          */
+/* ========================================== */
+.card {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-border);
+    display: flex;
+    flex-direction: column;
+    height: 280px; /* Altura fixa para todos os cards ficarem padronizados */
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+/* O corpo/texto do card que vai conter o resumo */
+.card-text,
+.card-content, 
+.note-card-body {
+    max-height: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
 
 /* ========================================== */
-/* 9. RESPONSIVIDADE MOBILE                   */
+/* 9. TEXTO CUSTOM E ESPAÇAMENTO              */
+/* ========================================== */
+.toolbar {
+    display: flex;
+    gap: 6px;
+    background: #f1f3f5;
+    padding: 8px 12px;
+    border-radius: 8px 8px 0 0;
+    border: 1px solid var(--gray-border);
+    border-bottom: none;
+    width: 100%;
+}
+
+.tool-btn {
+    padding: 6px 14px;
+    background: white;
+    border: 1px solid var(--gray-border);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: var(--navy-blue);
+    transition: all 0.2s;
+}
+
+.tool-btn:hover {
+    background: var(--navy-blue);
+    color: white;
+    border-color: var(--navy-blue);
+}
+
+.tool-btn.active {
+    background-color: var(--navy-blue) !important;
+    color: white !important;
+    border-color: var(--navy-blue) !important;
+}
+
+#texto-nota {
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+}
+
+/* Organização correta para listas dentro dos editores */
+.note-editor ul, #read-texto-nota ul {
+    padding-left: 20px;
+    list-style-type: disc;
+}
+
+.note-editor ol, #read-texto-nota ol {
+    padding-left: 20px;
+    list-style-type: decimal;
+}
+
+[contenteditable=true]:empty:before {
+    content: attr(placeholder);
+    color: #adb5bd;
+    display: block;
+}
+
+/* Espaçamento interno (padding) unificado para editores e visualização */
+.note-editor {
+    padding: 16px !important;
+    line-height: 1.6 !important;
+}
+
+/* ========================================== */
+/* 10. RESPONSIVIDADE MOBILE E AJUSTES DE UI   */
 /* ========================================== */
 @media (max-width: 768px) {
     .mobile-header {
@@ -739,29 +897,51 @@ body {
         align-items: center;
     }
     .mobile-header .logo img {
-        max-width: 100px !important; /* Diminui o tamanho da logo */
+        max-width: 100px !important;
         height: auto;
         object-fit: contain;
     }
     .app-layout {
         flex-direction: column;
     }
+    
+    /* Menu Lateral Corrigido (Com scroll e botão sair sempre visível) */
     .sidebar {
         position: fixed;
         left: -260px;
         top: 0;
         height: 100vh;
         transition: left 0.3s ease;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        overflow-y: auto !important;
+        max-height: 100vh !important;
+        padding-bottom: 40px !important;
+        z-index: 1000;
     }
     .sidebar.aberto {
         left: 0;
     }
+    
+    /* Botão Sair fixo e visível no final do menu */
+    #btn-logout {
+        margin-top: auto !important;
+        position: relative !important;
+        display: block !important;
+        width: 100% !important;
+        flex-shrink: 0 !important;
+    }
+
     .btn-fechar-menu {
         display: block;
     }
+    
+    /* Área principal com margem para evitar corte no final da página */
     .main-content {
-        padding: 80px 20px 20px 20px;
+        padding: 80px 20px 100px 20px !important;
     }
+
     #menu-overlay {
         position: fixed;
         top: 0;
@@ -775,6 +955,47 @@ body {
     #menu-overlay.aberto {
         display: block;
     }
+
+    /* Correção e alinhamento dos cabeçalhos de criação (Notas, Materiais e Datas) */
+    .form-header-mobile, 
+    .section-header.margin-top-md, 
+    #create-note-form > div:first-child,
+    #upload-material-form > div:first-child {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+    }
+
+    .header-actions {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 10px !important;
+    }
+
+    .header-actions select, 
+    .header-actions button {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .header-title-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Evitar corte dos cards no final do scroll */
+    .tab-content, 
+    .cards-grid, 
+    #notes-grid, 
+    #datas-grid, 
+    #materiais-grid {
+        padding-bottom: 90px !important;
+    }
+}
+
 /* Ajuste de responsividade para a imagem de horários no celular */
 .horario-preview-box img {
     width: 100% !important;
@@ -791,14 +1012,12 @@ body {
     }
     .horario-preview-box {
         padding: 10px !important;
-        border: none !important; /* Remove a borda tracejada no celular para limpar o visual */
+        border: none !important;
         background: transparent !important;
     }
 }
 
-/* ========================================== */
-/* AJUSTES MOBILE PARA A ABA DE DATAS         */
-/* ========================================== */
+/* Estilo para Textareas dos formulários */
 .form-control-textarea {
     width: 100%;
     padding: 14px 16px;
@@ -817,22 +1036,3 @@ body {
     box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1);
 }
 
-@media (max-width: 768px) {
-    .form-header-mobile {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 12px !important;
-    }
-    .form-header-mobile .header-actions {
-        width: 100% !important;
-        display: flex !important;
-        justify-content: space-between !important;
-        gap: 8px !important;
-    }
-    .form-header-mobile .header-actions select {
-        flex-grow: 1 !important;
-        max-width: 65% !important;
-    }
-}
-
-}

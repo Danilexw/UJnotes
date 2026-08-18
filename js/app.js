@@ -21,6 +21,107 @@ async function checkAuth() {
     carregarMateriais(); 
 }
 
+
+window.aplicarFormatacao = function(comando, btnElement) {
+    const editor = document.getElementById('texto-nota');
+    if (editor) {
+        editor.focus(); 
+        document.execCommand(comando, false, null);
+        
+        // Alterna o estado visual (UX) imediatamente no botão clicado
+        if (btnElement) {
+            btnElement.classList.toggle('active');
+        }
+    }
+};
+
+// ==========================================
+// FUNÇÕES AUXILIARES DA TOOLBAR (VERSÃO ROBUSTA)
+// ==========================================
+function atualizarEstadoBotoesToolbar() {
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return;
+
+    let node = selection.anchorNode;
+    if (!node) return;
+
+    // Se o nó selecionado for um texto, pega o elemento pai
+    if (node.nodeType === Node.TEXT_NODE) {
+        node = node.parentNode;
+    }
+
+    let isBold = false;
+    let isItalic = false;
+    let isUnderline = false;
+
+    // Sobe na árvore de elementos verificando se está dentro de tags de formatação
+    const editor = document.getElementById('texto-nota');
+    while (node && node !== editor && node !== document.body) {
+        const tag = node.nodeName ? node.nodeName.toLowerCase() : '';
+        const fontWeight = node.style ? node.style.fontWeight : '';
+        const fontStyle = node.style ? node.style.fontStyle : '';
+        const textDecoration = node.style ? node.style.textDecoration : '';
+
+        if (tag === 'b' || tag === 'strong' || fontWeight === 'bold' || fontWeight === '700') isBold = true;
+        if (tag === 'i' || tag === 'em' || fontStyle === 'italic') isItalic = true;
+        if (tag === 'u' || textDecoration.includes('underline')) isUnderline = true;
+
+        node = node.parentNode;
+    }
+
+    // Fallback para o comando nativo caso não encontre via árvore
+    if (!isBold && document.queryCommandState) isBold = document.queryCommandState('bold');
+    if (!isItalic && document.queryCommandState) isItalic = document.queryCommandState('italic');
+    if (!isUnderline && document.queryCommandState) isUnderline = document.queryCommandState('underline');
+
+    toggleBotaoToolbar('bold', isBold);
+    toggleBotaoToolbar('italic', isItalic);
+    toggleBotaoToolbar('underline', isUnderline);
+}
+
+function toggleBotaoToolbar(comando, ativo) {
+    const botoes = document.querySelectorAll('.tool-btn');
+    botoes.forEach(btn => {
+        const funcaoBotao = btn.getAttribute('onmousedown') || '';
+        if (funcaoBotao.includes(`aplicarFormatacao('${comando}')`)) {
+            if (ativo) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        }
+    });
+}
+
+// ==========================================
+// NEGRITO, ITALICO NOTA 
+// ==========================================
+
+window.formatarTexto = function(tagInicio, tagFim) {
+    const textArea = document.getElementById('texto-nota');
+    if (!textArea) return;
+
+    const start = textArea.selectionStart;
+    const end = textArea.selectionEnd;
+    const texto = textArea.value;
+    
+    const textoSelecionado = texto.substring(start, end);
+    
+    // Se nada estiver selecionado, insere as tags e coloca o cursor no meio delas
+    if (start === end) {
+        textArea.value = texto.substring(0, start) + tagInicio + tagFim + texto.substring(end);
+        textArea.focus();
+        const novaPosicao = start + tagInicio.length;
+        textArea.setSelectionRange(novaPosicao, novaPosicao);
+    } else {
+        // Se houver texto selecionado, envolve o texto com as tags
+        textArea.value = texto.substring(0, start) + tagInicio + textoSelecionado + tagFim + texto.substring(end);
+        textArea.focus();
+        const novaPosicao = end + tagInicio.length + tagFim.length;
+        textArea.setSelectionRange(novaPosicao, novaPosicao);
+    }
+};
+
 // ==========================================
 // ABRIR NOTA PARA LEITURA
 // ==========================================
@@ -35,10 +136,20 @@ window.abrirNotaCompleta = function(idNota) {
     const dataObj = new Date(nota.created_at);
     document.getElementById('read-data').innerText = `${String(dataObj.getDate()).padStart(2, '0')}/${String(dataObj.getMonth() + 1).padStart(2, '0')}`;
     
-    const textAreaLeitura = document.getElementById('read-texto-nota');
-    textAreaLeitura.value = nota.conteudo;
-    textAreaLeitura.readOnly = true; 
-    textAreaLeitura.style.border = "1px solid var(--gray-border)";
+    // Na função abrirNotaCompleta ou ao carregar a edição:
+    const divLeitura = document.getElementById('read-texto-nota');
+    divLeitura.innerHTML = nota.conteudo; // Renderiza o HTML salvo direto (negrito, itálico, etc.)
+    
+    // Conversão direta e garantida de Markdown para HTML básico:
+    let textoFormatado = nota.conteudo
+        // Converte **negrito** para <b>
+        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+        // Converte *itálico* para <i>
+        .replace(/\*(.*?)\*/g, '<i>$1</i>')
+        // Converte <u>sublinhado</u>
+        .replace(/&lt;u&gt;(.*?)&lt;\/u&gt;/g, '<u>$1</u>');
+
+    divLeitura.innerHTML = textoFormatado;
 
     const btnEditar = document.getElementById('btn-editar-nota');
     if (btnEditar) {
@@ -53,6 +164,14 @@ window.abrirNotaCompleta = function(idNota) {
     readView.classList.remove('hidden');
     readView.style.display = 'flex';
 };
+
+// Função auxiliar para remover tags HTML e exibir apenas o texto limpo no card
+function limparHtmlParaCard(html) {
+    if (!html) return "";
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    return tempDiv.textContent || tempDiv.innerText || "";
+}
 
 function renderizarCards(data) {
     const notesGrid = document.getElementById('notes-grid');
@@ -69,13 +188,12 @@ function renderizarCards(data) {
         const dia = String(dataCriacao.getDate()).padStart(2, '0');
         const mes = String(dataCriacao.getMonth() + 1).padStart(2, '0');
         const corCard = Math.random() < 0.5 ? 'card-navy' : 'card-red';
-        const conteudoEscapado = nota.conteudo.replace(/"/g, '&quot;');
 
         const cardHTML = `
             <div class="card ${corCard}" onclick="abrirNotaCompleta('${nota.id}')">
                 <div class="card-tag">Matéria: ${nota.disciplina.toUpperCase()}</div>
                 <div class="card-date">Criado em: ${dia}/${mes}</div>
-                <p class="card-text">${conteudoEscapado}</p>
+                <div class="card-text">${nota.conteudo}</div>
                 <div class="card-footer">
                     <span>Criado por: ${nota.nome_autor}</span>
                     <p class="btn-opcoes" onclick="event.stopPropagation(); abrirNotaCompleta('${nota.id}')">⋮</p>
@@ -417,7 +535,7 @@ async function carregarMateriais() {
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
 
-    // Navegação de Abas
+    // Navegação de Abas (código que você já tinha)
     const navItems = document.querySelectorAll('.nav-item');
     const tabContents = document.querySelectorAll('.tab-content');
 
@@ -438,6 +556,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // ==========================================
+    // MONITORAMENTO DOS BOTÕES DA TOOLBAR (B, I, U)
+    // ==========================================
+    const editor = document.getElementById('texto-nota');
+    if (editor) {
+        ['keyup', 'mouseup', 'click'].forEach(evento => {
+            editor.addEventListener(evento, atualizarEstadoBotoesToolbar);
+        });
+    }
 
     // ==========================================
     // SISTEMA DE PESQUISA E FILTRO DE ANOTAÇÕES
@@ -531,10 +659,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSalvarNota = document.getElementById('btn-salvar-nota');
     if (btnSalvarNota) {
         btnSalvarNota.addEventListener('click', async () => {
-            const conteudoNota = document.getElementById('texto-nota').value;
+            // AQUI MUDOU: Agora pegamos o innerHTML da div editável
+            const conteudoNota = document.getElementById('texto-nota').innerHTML;
             const materiaSelecionada = document.getElementById('select-materia').value;
 
-            if (!conteudoNota.trim()) { alert("A anotação não pode estar vazia!"); return; }
+            if (!conteudoNota.trim() || conteudoNota === '<br>') { 
+                alert("A anotação não pode estar vazia!"); 
+                return; 
+            }
 
             const textoOriginal = btnSalvarNota.innerText;
             btnSalvarNota.innerText = "Salvando...";
@@ -548,7 +680,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (error) alert("Erro ao salvar a anotação.");
             else {
-                document.getElementById('texto-nota').value = '';
+                // AQUI ENTRA A MUDANÇA: Limpa a div editável após salvar com sucesso
+                document.getElementById('texto-nota').innerHTML = '';
+                
                 createNoteForm.classList.add('hidden');
                 createNoteForm.style.display = 'none'; 
                 if (anotacoesHeader) anotacoesHeader.classList.remove('hidden');
@@ -570,38 +704,45 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const btnEditarNota = document.getElementById('btn-editar-nota');
-    if (btnEditarNota) {
-        btnEditarNota.addEventListener('click', async () => {
-            const textArea = document.getElementById('read-texto-nota');
-            const idNota = document.getElementById('nota-atual-id').value;
+if (btnEditarNota) {
+    btnEditarNota.addEventListener('click', async () => {
+        const divLeitura = document.getElementById('read-texto-nota');
+        const idNota = document.getElementById('nota-atual-id').value;
 
-            if (textArea.readOnly) {
-                textArea.readOnly = false;
-                textArea.style.border = "2px solid var(--navy-blue)";
-                textArea.focus();
-                btnEditarNota.innerText = "SALVAR ALTERAÇÃO";
-                btnEditarNota.style.backgroundColor = "green";
-            } else {
-                const novoConteudo = textArea.value;
-                if (!novoConteudo.trim()) { alert("A nota não pode ficar vazia."); return; }
-
-                btnEditarNota.innerText = "Salvando...";
-                btnEditarNota.disabled = true;
-
-                const { error } = await window.supabase.from('anotacoes').update({ conteudo: novoConteudo }).eq('id', idNota);
-                btnEditarNota.disabled = false;
-
-                if (error) { alert("Erro ao editar nota."); btnEditarNota.innerText = "SALVAR ALTERAÇÃO"; } 
-                else {
-                    textArea.readOnly = true;
-                    textArea.style.border = "1px solid var(--gray-border)";
-                    btnEditarNota.innerText = "EDITAR";
-                    btnEditarNota.style.backgroundColor = "var(--navy-blue)";
-                    carregarAnotacoes(); 
-                }
+        // Se não estava editável, agora fica editável
+        if (divLeitura.getAttribute('contenteditable') !== 'true') {
+            divLeitura.setAttribute('contenteditable', 'true');
+            divLeitura.style.border = "2px solid var(--navy-blue)";
+            divLeitura.focus();
+            btnEditarNota.innerText = "SALVAR ALTERAÇÃO";
+            btnEditarNota.style.backgroundColor = "green";
+        } else {
+            // Se já estava editando, agora salva no Supabase
+            const novoConteudo = divLeitura.innerHTML;
+            if (!novoConteudo.trim() || novoConteudo === '<br>') { 
+                alert("A nota não pode ficar vazia."); 
+                return; 
             }
-        });
-    }
+
+            btnEditarNota.innerText = "Salvando...";
+            btnEditarNota.disabled = true;
+
+            const { error } = await window.supabase.from('anotacoes').update({ conteudo: novoConteudo }).eq('id', idNota);
+            
+            btnEditarNota.disabled = false;
+            btnEditarNota.innerText = "EDITAR";
+            btnEditarNota.style.backgroundColor = "var(--navy-blue)";
+
+            if (error) {
+                alert("Erro ao editar nota.");
+            } else {
+                divLeitura.setAttribute('contenteditable', 'false');
+                divLeitura.style.border = "1px solid var(--gray-border)";
+                carregarAnotacoes(); 
+            }
+        }
+    });
+}
 
     const btnExcluirNota = document.getElementById('btn-excluir-nota');
     if (btnExcluirNota) {
