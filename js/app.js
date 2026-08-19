@@ -529,6 +529,15 @@ async function carregarMateriais() {
     renderizarCardsMateriais(data);
 }
 
+// Função para limpar caracteres especiais, acentos e espaços do nome do arquivo
+function sanitizarNomeArquivo(nomeOriginal) {
+    return nomeOriginal
+        .normalize('NFD')                      // Separa os acentos das letras
+        .replace(/[\u0300-\u036f]/g, "")       // Remove os acentos
+        .replace(/[^a-zA-Z0-9.\-_]/g, "_")     // Substitui espaços e símbolos inválidos por underline (_)
+        .toLowerCase();                        // Padroniza em minúsculas
+}
+
 // ==========================================
 // INICIALIZAÇÃO E EVENTOS
 // ==========================================
@@ -932,44 +941,46 @@ if (btnEditarNota) {
             materiaisGridElement.classList.remove('hidden');
         });
     }
+const btnSalvarMaterial = document.getElementById('btn-salvar-material');
+if (btnSalvarMaterial) {
+    btnSalvarMaterial.addEventListener('click', async () => {
+        const tituloMaterial = document.getElementById('titulo-material').value;
+        const materiaSelecionada = document.getElementById('select-materia-upload').value;
+        const inputFile = document.getElementById('arquivo-material');
 
-    const btnSalvarMaterial = document.getElementById('btn-salvar-material');
-    if (btnSalvarMaterial) {
-        btnSalvarMaterial.addEventListener('click', async () => {
-            const tituloMaterial = document.getElementById('titulo-material').value;
-            const materiaSelecionada = document.getElementById('select-materia-upload').value;
-            const inputFile = document.getElementById('arquivo-material');
+        if (!tituloMaterial.trim()) { alert("Por favor, dê um título ao material."); return; }
+        if (!inputFile.files || inputFile.files.length === 0) { alert("Você precisa selecionar um arquivo."); return; }
 
-            if (!tituloMaterial.trim()) { alert("Por favor, dê um título ao material."); return; }
-            if (!inputFile.files || inputFile.files.length === 0) { alert("Você precisa selecionar um arquivo."); return; }
+        const arquivo = inputFile.files[0];
+        const timestamp = new Date().getTime();
+        
+        // Limpa o nome do arquivo para evitar erros de Invalid key no Supabase Storage
+        const nomeLimpo = sanitizarNomeArquivo(arquivo.name);
+        const filePath = `${timestamp}-${nomeLimpo}`;
 
-            const arquivo = inputFile.files[0];
-            const timestamp = new Date().getTime();
-            const filePath = `${timestamp}-${arquivo.name}`;
+        const textoOriginal = btnSalvarMaterial.innerText;
+        btnSalvarMaterial.innerText = "Fazendo Upload... ⏳";
+        btnSalvarMaterial.disabled = true;
 
-            const textoOriginal = btnSalvarMaterial.innerText;
-            btnSalvarMaterial.innerText = "Fazendo Upload... ⏳";
-            btnSalvarMaterial.disabled = true;
+        try {
+            const { error: uploadError } = await window.supabase.storage.from('materiais-aulas').upload(filePath, arquivo);
+            if (uploadError) throw new Error("Erro no upload: " + uploadError.message);
 
-            try {
-                const { error: uploadError } = await window.supabase.storage.from('materiais-aulas').upload(filePath, arquivo);
-                if (uploadError) throw new Error("Erro no upload: " + uploadError.message);
+            const { data: urlData } = window.supabase.storage.from('materiais-aulas').getPublicUrl(filePath);
+            const arquivoUrlPublica = urlData.publicUrl;
+            const nomeAutor = currentUser.user_metadata?.full_name || 'Aluno';
 
-                const { data: urlData } = window.supabase.storage.from('materiais-aulas').getPublicUrl(filePath);
-                const arquivoUrlPublica = urlData.publicUrl;
-                const nomeAutor = currentUser.user_metadata?.full_name || 'Aluno';
+            const { error: insertError } = await window.supabase.from('materiais').insert([{ user_id: currentUser.id, nome_autor: nomeAutor, disciplina: materiaSelecionada, titulo: tituloMaterial, arquivo_nome: arquivo.name, arquivo_url: arquivoUrlPublica }]);
+            if (insertError) throw new Error("Erro ao salvar: " + insertError.message);
 
-                const { error: insertError } = await window.supabase.from('materiais').insert([{ user_id: currentUser.id, nome_autor: nomeAutor, disciplina: materiaSelecionada, titulo: tituloMaterial, arquivo_nome: arquivo.name, arquivo_url: arquivoUrlPublica }]);
-                if (insertError) throw new Error("Erro ao salvar: " + insertError.message);
-
-                document.getElementById('titulo-material').value = '';
-                inputFile.value = '';
-                btnVoltarMateriais.click();
-                carregarMateriais();
-            } catch (erro) { alert(erro.message); } 
-            finally { btnSalvarMaterial.innerText = textoOriginal; btnSalvarMaterial.disabled = false; }
-        });
-    }
+            document.getElementById('titulo-material').value = '';
+            inputFile.value = '';
+            btnVoltarMateriais.click();
+            carregarMateriais();
+        } catch (erro) { alert(erro.message); } 
+        finally { btnSalvarMaterial.innerText = textoOriginal; btnSalvarMaterial.disabled = false; }
+    });
+}
 
     const btnFecharEditMaterial = document.getElementById('btn-fechar-edit-material');
     const editMaterialForm = document.getElementById('edit-material-form');
@@ -1037,6 +1048,8 @@ if (btnEditarNota) {
             else renderizarCardsMateriais(data);
         });
     }
+
+    
 
     // ==========================================
     // CONTROLES DO MENU MOBILE E OVERLAY
